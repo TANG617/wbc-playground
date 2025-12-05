@@ -1,7 +1,7 @@
 {
-  "name": "A2D-TELE ARM64 (Isaac ROS)",
+  "name": "wbc playground arm64 (Isaac ROS)",
   "image": "docker-registry.psibot.net/synrobot/isaac-ros-aarch64:humble",
-  "containerName": "a2d-tele-arm64",
+  "containerName": "ros-humble-arm64",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "workspaceFolder": "/workspace",
   "mounts": [

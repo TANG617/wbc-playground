@@ -1,7 +1,7 @@
 {
-  "name": "A2D-TELE x86",
+  "name": "wbc playground x86",
   "image": "docker-registry.psibot.net/synrobot/ros-x86:humble",
-  "containerName": "a2d-tele-x86",
+  "containerName": "ros-humble-x86",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
   "workspaceFolder": "/workspace",
   "mounts": [
@@ -10,7 +10,8 @@
   ],
   "runArgs": [
     "--privileged",
-    "--platform=linux/amd64"
+    "--platform=linux/amd64",
+    "--host"
   ],
   "remoteUser": "psibot",
   "updateRemoteUserUID": true,
