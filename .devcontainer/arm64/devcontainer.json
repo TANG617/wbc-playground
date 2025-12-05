@@ -1,0 +1,44 @@
+{
+  "name": "A2D-TELE ARM64 (Isaac ROS)",
+  "image": "docker-registry.psibot.net/synrobot/isaac-ros-aarch64:humble",
+  "containerName": "a2d-tele-arm64",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "workspaceFolder": "/workspace",
+  "mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/psibot/.ssh,type=bind,consistency=cached",
+    "source=/dev,target=/dev,type=bind"
+  ],
+  "runArgs": [
+    "--privileged"
+  ],
+  "remoteUser": "psibot",
+  "updateRemoteUserUID": true,
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-python.python",
+        "ms-iot.vscode-ros",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-vscode.cmake-tools"
+      ],
+      "settings": {
+        "git.autoRepositoryDetection": true,
+        "git.detectSubmodules": true,
+        "git.scanRepositories": [
+          "/workspace",
+          "/workspace/modules/drivers/dexterous-hand",
+          "/workspace/modules/drivers/dexterous-hand/lib/ruiyan_hand_sdk",
+          "/workspace/modules/drivers/synglove",
+          "/workspace/modules/drivers/synglove/lib/synglove-sdk"
+        ],
+        "git.repositoryScanMaxDepth": 3
+      }
+    }
+  },
+  "postCreateCommand": "bash -c 'sudo apt-get update --allow-releaseinfo-change && sudo apt-get install -y clangd && chmod 700 ~/.ssh && chmod 600 ~/.ssh/* 2>/dev/null || true && echo \"alias cb=\\\"colcon build\\\"\" >> ~/.bashrc'",
+  "remoteEnv": {
+    "ROS_DOMAIN_ID": "42"
+  }
+}
+
