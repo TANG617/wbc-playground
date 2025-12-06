@@ -1,0 +1,155 @@
+ik_wrapper_node:
+  ros__parameters:
+    # Robot configuration
+    robot:
+      urdf_path: "assets/A2D_NoHand/A2D_NoHand_Flattened.urdf"
+      base_link: "base_link"
+      
+      joint_names:
+        - "joint_lift_body"
+        - "joint_body_pitch"
+        - "joint1_l"
+        - "joint2_l"
+        - "joint3_l"
+        - "joint4_l"
+        - "joint5_l"
+        - "joint6_l"
+        - "joint7_l"
+        - "joint1_r"
+        - "joint2_r"
+        - "joint3_r"
+        - "joint4_r"
+        - "joint5_r"
+        - "joint6_r"
+        - "joint7_r"
+      
+      left_end_effector: "Link7_l"
+      right_end_effector: "Link7_r"
+      
+      joint_limits:
+        # Note: joint_lift_body and joint_body_pitch are kept narrow to keep waist stationary
+        # Based on physical measurement data (left/right arms identical):
+        # joint2: [-1.92, 1.81], joint3: [-3.14, 3.14], joint4: [-1.75, 1.45], joint6: [-1.7, 1.7], joint7: [-3.14, 3.14]
+        # joint4 upper limit is critical: physical max is 1.47 rad, using 1.45 for 0.02 rad safety buffer
+        lower: [0.399, 0.435, -3.14, -1.92, -3.14, -1.75, -3.14, -1.7, -3.14, -3.14, -1.92, -3.14, -1.75, -3.14, -1.7, -3.14]
+        upper: [0.401, 0.437, 3.14, 1.81, 3.14, 1.45, 3.14, 1.7, 3.14, 3.14, 1.81, 3.14, 1.45, 3.14, 1.7, 3.14]
+        velocity: [0.5, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14]
+      
+      initial_position:
+        # Body joints
+        joint_lift_body: 0.4    # Mid-height position (0.0-0.5 range)
+        joint_body_pitch: 0.436    # Neutral pitch
+
+        # Left arm joints - Copied from Python/Mujoco working config (scene.xml)
+        joint1_l: 1.1459065675735474      # From Mujoco (tested & working)
+        joint2_l: -0.7884084582328796     # From Mujoco (tested & working)
+        joint3_l: -0.5154555439949036     # From Mujoco (tested & working)
+        joint4_l: -1.3812546730041504     # From Mujoco (tested & working)
+        joint5_l: 0.7422706484794617      # From Mujoco (tested & working)
+        joint6_l: -1.1475818157196045     # From Mujoco (tested & working)
+        joint7_l: 0.17758865654468536     # From Mujoco (tested & working)
+        
+        # Right arm joints - symmetric home position
+        joint1_r: -1.209982991218567      # Shoulder pan - forward
+        joint2_r: 0.6525776386260986      # Shoulder lift - neutral
+        joint3_r: 0.6103312373161316      # Shoulder roll - neutral
+        joint4_r: 1.0545557737350464     # Elbow - 90° bend (comfortable)
+        joint5_r: -1.2333834171295166     # Wrist 1 - neutral
+        joint6_r: 0.9266473650932312      # Wrist 2 - facing forward
+        joint7_r: 0.1652689427137375     # Wrist 3 - neutral
+
+    # Control parameters
+    control:
+      frequency: 100.0
+      position_tolerance: 0.01
+      orientation_tolerance: 0.05
+      max_velocity: 1.0
+      max_acceleration: 2.0
+      
+      # Performance and safety
+      workspace_limit: 5.0
+      smooth_factor: 0.6  # Reduced from 0.8 for better responsiveness (lower = more responsive, higher = smoother)
+      
+      # Debug counters and logging
+      task_check_frequency: -1      # Check tasks every N cycles (-1 = disabled)
+      target_log_frequency: -1      # Log targets every N cycles (-1 = disabled)
+      debug_log_frequency: -1       # Debug logs every N cycles (-1 = disabled)
+      state_log_frequency: -1       # State logs every N cycles (-1 = disabled)
+      solve_log_frequency: -1       # Solver logs every N cycles (-1 = disabled)
+
+    # Workspace limits for safety
+    workspace:
+      x_min: -2.0
+      x_max: 2.0
+      y_min: -2.0
+      y_max: 2.0
+      z_min: 0.1
+      z_max: 1.5
+
+    # Task weights and priorities
+    tasks:
+      left_ee_position:
+        enabled: true
+        weight: 100.0
+        priority: "hard"
+        
+      left_ee_orientation:
+        enabled: true
+        weight: 50.0
+        priority: "soft"
+        
+      right_ee_position:
+        enabled: true
+        weight: 100.0
+        priority: "hard"
+        
+      right_ee_orientation:
+        enabled: true
+        weight: 50.0
+        priority: "soft"
+        
+      posture_maintenance:
+        enabled: true
+        weight: 10.0     # Further increased to strongly maintain natural elbow pose
+        priority: "soft"
+        
+      current_joint_preference:
+        enabled: true
+        weight: 20.0     # Much higher to prevent elbow from pointing up
+        priority: "soft"
+        
+      joint_regularization:
+        enabled: true
+        weight: 0.0001
+        priority: "soft"
+        
+      kinetic_energy:
+        enabled: true
+        weight: 0.0001
+        priority: "soft"
+
+    # VR coordinate transform
+    # IMPORTANT: pipe_vr_tracker.cpp already does coordinate calibration
+    # But right hand needs additional axis swap correction
+    # Format: [source_axis, sign] where axis: 0=X, 1=Y, 2=Z, sign: 1 or -1
+    vr_coordinate_transform:
+      left_hand:
+        # Left hand mapping - adjusting X and Z signs (up/down OK, left/right reversed, front/back reversed)
+        position_axis_mapping:
+          x: [1, -1]  # Robot X = -VR_Y (left/right) SIGN FLIPPED
+          y: [2, -1]  # Robot Y = -VR_Z (up/down) ✓ CORRECT - NO CHANGE
+          z: [0, 1]   # Robot Z = +VR_X (front/back) SIGN FLIPPED
+        orientation_axis_mapping:
+          x: [1, -1]
+          y: [2, -1]
+          z: [0, 1]
+      right_hand:
+        # Right hand correction - THIS IS WORKING, DON'T CHANGE
+        position_axis_mapping:
+          x: [1, 1]   # Robot X (forward/back) = VR axis 1 (VR forward/back) ✅
+          y: [2, 1]   # Robot Y (left/right) = VR axis 2 (VR left/right) ✅
+          z: [0, 1]   # Robot Z (up/down) = VR axis 0 (VR up/down) ✅
+        orientation_axis_mapping:
+          x: [1, 1]
+          y: [2, 1]
+          z: [0, 1]

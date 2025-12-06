@@ -11,7 +11,7 @@
   "runArgs": [
     "--privileged",
     "--platform=linux/amd64",
-    "--host"
+    "--network=host"
   ],
   "remoteUser": "psibot",
   "updateRemoteUserUID": true,
@@ -25,6 +25,7 @@
         "ms-vscode.cmake-tools"
       ],
       "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
         "git.autoRepositoryDetection": true,
         "git.detectSubmodules": true,
         "git.scanRepositories": [
@@ -38,7 +39,7 @@
       }
     }
   },
-  "postCreateCommand": "bash -c 'sudo apt-get update && sudo apt-get install -y clangd && chmod 700 ~/.ssh && chmod 600 ~/.ssh/* 2>/dev/null || true && echo \"alias cb=\\\"colcon build\\\"\" >> ~/.bashrc'",
+  "postCreateCommand": "bash -c 'sudo apt-get update && sudo apt-get install -y clangd && chmod 700 ~/.ssh && chmod 600 ~/.ssh/* 2>/dev/null || true && echo \"alias cb=\\\"colcon build\\\"\" >> ~/.bashrc && echo \"alias cbc=\\\"colcon build --cmake-args -DCMAKE_EXPORT_COMPILE_COMMANDS=ON\\\"\" >> ~/.bashrc && echo \"alias rmb=\\\"rm -rf build/ install/ log/\\\"\" >> ~/.bashrc'",
   "remoteEnv": {
     "ROS_DOMAIN_ID": "42"
   }
